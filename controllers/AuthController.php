@@ -20,6 +20,39 @@ class AuthController extends BaseController {
         $this->view('auth/register');
     }
 
+    public function login() {
+        $rules = [
+            'email' => ['required' => true, 'email' => true],
+            'password' => ['required' => true]
+        ];
+        if (!$this->validator->validate($_POST, $rules)) {
+            $_SESSION['errors'] = $this->validator->getErrors();
+            $_SESSION['old'] = $_POST;
+            $this->redirect('/login');
+            return;
+        }
+
+        try {
+            $stmt = $this->db->prepare("SELECT id, name, email, password, role FROM users WHERE email = ?");
+            $stmt->execute([$_POST['email']]);
+            $user = $stmt->fetch();
+
+            if (!$user || !password_verify($_POST['password'], $user['password'])) {
+                $_SESSION['error'] = "Invalid credentials";
+                $this->redirect('/login');
+                return;
+            }
+
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['user_name'] = $user['name'];
+            $_SESSION['role'] = $user['role'];
+            $this->redirect('/events');
+        } catch (PDOException $e) {
+            $_SESSION['error'] = "An error occurred. Please try again.";
+            $this->redirect('/login');
+        }
+    }
+
     public function register() {
         $rules = [
             'name' => ['required' => true, 'min' => 3],
