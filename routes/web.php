@@ -8,3 +8,6 @@ $router->get('/login', [AuthController::class, 'showLoginForm']);
 $router->get('/register', [AuthController::class, 'showRegistrationForm']);
 $router->post('/login', [AuthController::class, 'login']);
 $router->post('/register', [AuthController::class, 'register']);
+
+// Authenticated routes
+$router->get('/logout', [AuthController::class, 'logout']);

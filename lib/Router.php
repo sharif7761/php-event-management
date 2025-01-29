@@ -1,6 +1,4 @@
 <?php
-
-namespace lib;
 class Router
 {
     private $routes = [];

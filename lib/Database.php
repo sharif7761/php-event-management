@@ -1,6 +1,4 @@
 <?php
-
-namespace lib;
 class Database
 {
     private static $instance = null;

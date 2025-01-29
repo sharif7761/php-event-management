@@ -1,6 +1,4 @@
 <?php
-
-namespace controller;
 class BaseController
 {
     protected function view($name, $data = [])
