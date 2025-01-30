@@ -11,3 +11,5 @@ $router->post('/register', [AuthController::class, 'register']);
 
 // Authenticated routes
 $router->get('/logout', [AuthController::class, 'logout']);
+$router->get('/events/create', [EventController::class, 'create']);
+$router->post('/events', [EventController::class, 'store']);
