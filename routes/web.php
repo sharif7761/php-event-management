@@ -12,6 +12,9 @@ $router->get('/register', [AuthController::class, 'showRegistrationForm'], [Gues
 $router->post('/login', [AuthController::class, 'login'], [GuestMiddleware::class]);
 $router->post('/register', [AuthController::class, 'register'], [GuestMiddleware::class]);
 
+//homepage
+$router->get('/', [HomeController::class, 'index']);
+
 // Authenticated routes
 $router->get('/logout', [AuthController::class, 'logout'], [AuthMiddleware::class]);
 

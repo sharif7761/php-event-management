@@ -1,10 +1,8 @@
 <?php
-class Validator
-{
+class Validator {
     private $errors = [];
 
-    public function validate($data, $rules)
-    {
+    public function validate($data, $rules) {
         foreach ($rules as $field => $rule) {
             if (isset($rule['required']) && $rule['required'] && empty($data[$field])) {
                 $this->errors[$field][] = ucfirst($field) . " is required";
@@ -27,8 +25,7 @@ class Validator
         return empty($this->errors);
     }
 
-    public function getErrors()
-    {
+    public function getErrors() {
         return $this->errors;
     }
 }
