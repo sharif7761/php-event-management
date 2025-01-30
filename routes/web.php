@@ -11,5 +11,8 @@ $router->post('/register', [AuthController::class, 'register']);
 
 // Authenticated routes
 $router->get('/logout', [AuthController::class, 'logout']);
+
+// manage events routes
+$router->get('/events', [EventController::class, 'index']);
 $router->get('/events/create', [EventController::class, 'create']);
 $router->post('/events', [EventController::class, 'store']);

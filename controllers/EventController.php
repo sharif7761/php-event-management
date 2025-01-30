@@ -2,14 +2,44 @@
 require_once __DIR__ . '/BaseController.php';
 require_once __DIR__ . '/../lib/Validator.php';
 require_once __DIR__ . '/../lib/Database.php';
+require_once __DIR__ . '/../lib/EventHelper.php';
+require_once __DIR__ . '/../middleware/RoleMiddleware.php';
 
 class EventController extends BaseController {
     private $db;
     private $validator;
+    private $eventHelper;
 
     public function __construct() {
         $this->db = Database::getInstance()->getConnection();
         $this->validator = new Validator();
+        $this->eventHelper = new EventHelper($this->db);
+    }
+
+    public function index() {
+        try {
+            $search = $_GET['search'] ?? '';
+            $searchParam = "%{$search}%";
+
+            $query = $this->eventHelper->getEventQuery(
+                $searchParam,
+                RoleMiddleware::isAdmin() ? null : $_SESSION['user_id']
+            );
+
+            $stmt = $this->db->prepare($query['sql']);
+            $stmt->execute($query['params']);
+            $events = $stmt->fetchAll();
+
+            $this->view('events/index', [
+                'title' => RoleMiddleware::isAdmin() ? 'All Events' : 'My Events',
+                'events' => $events,
+                'search' => $search,
+                'isAdmin' => RoleMiddleware::isAdmin()
+            ]);
+        } catch (PDOException $e) {
+            $_SESSION['error'] = "Error fetching events";
+            $this->redirect('/events');
+        }
     }
 
     public function create() {
