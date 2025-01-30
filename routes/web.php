@@ -16,3 +16,4 @@ $router->get('/logout', [AuthController::class, 'logout']);
 $router->get('/events', [EventController::class, 'index']);
 $router->get('/events/create', [EventController::class, 'create']);
 $router->post('/events', [EventController::class, 'store']);
+$router->get('/events/show/:id', [EventController::class, 'show']);

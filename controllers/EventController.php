@@ -21,6 +21,7 @@ class EventController extends BaseController {
             $search = $_GET['search'] ?? '';
             $searchParam = "%{$search}%";
 
+            // Get the appropriate query based on user role
             $query = $this->eventHelper->getEventQuery(
                 $searchParam,
                 RoleMiddleware::isAdmin() ? null : $_SESSION['user_id']
@@ -77,6 +78,49 @@ class EventController extends BaseController {
         } catch (PDOException $e) {
             $_SESSION['error'] = "Error creating event";
             $this->redirect('/events/create');
+        }
+    }
+    public function show($id) {
+        try {
+            if (!RoleMiddleware::authorizeEvent($id, $this->db)) {
+                $_SESSION['error'] = "Access denied";
+                $this->redirect('/events');
+                return;
+            }
+
+            $event = $this->eventHelper->getEventDetails(
+                $id,
+                RoleMiddleware::isAdmin() ? null : $_SESSION['user_id']
+            );
+
+            if (!$event) {
+                $_SESSION['error'] = "Event not found";
+                $this->redirect('/events');
+                return;
+            }
+
+            $search = $_GET['search'] ?? '';
+            $searchParam = "%{$search}%";
+
+            $stmt = $this->db->prepare("
+                SELECT * FROM event_attendees 
+                WHERE event_id = ? 
+                AND (attendee_name LIKE ? OR attendee_email LIKE ?)
+                ORDER BY created_at DESC
+            ");
+            $stmt->execute([$id, $searchParam, $searchParam]);
+            $attendees = $stmt->fetchAll();
+
+            $this->view('events/show', [
+                'title' => $event['name'],
+                'event' => $event,
+                'attendees' => $attendees,
+                'search' => $search,
+                'isAdmin' => RoleMiddleware::isAdmin()
+            ]);
+        } catch (PDOException $e) {
+            $_SESSION['error'] = "Error fetching event details";
+            $this->redirect('/events');
         }
     }
 }
