@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../lib/Database.php';
+require_once __DIR__ . '/../lib/ErrorHandler.php';
 
 class ApiController
 {
@@ -69,9 +70,7 @@ class ApiController
             $this->jsonResponse($formattedEvents);
 
         } catch (PDOException $e) {
-            $this->errorResponse('Database error', 500);
-        } catch (Exception $e) {
-            $this->errorResponse('Server error', 500);
+            ErrorHandler::handleError("An error occurred. Please try again.");
         }
     }
 }

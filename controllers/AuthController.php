@@ -2,6 +2,7 @@
 require_once __DIR__ . '/BaseController.php';
 require_once __DIR__ . '/../lib/Validator.php';
 require_once __DIR__ . '/../lib/Database.php';
+require_once __DIR__ . '/../lib/ErrorHandler.php';
 
 class AuthController extends BaseController {
     private $db;
@@ -48,7 +49,7 @@ class AuthController extends BaseController {
             $_SESSION['role'] = $user['role'];
             $this->redirect('/events');
         } catch (PDOException $e) {
-            $_SESSION['error'] = "An error occurred. Please try again.";
+            ErrorHandler::handleError("An error occurred. Please try again.");
             $this->redirect('/login');
         }
     }
@@ -87,7 +88,7 @@ class AuthController extends BaseController {
             $_SESSION['success'] = "Registration successful. Please login.";
             $this->redirect('/login');
         } catch (PDOException $e) {
-            $_SESSION['error'] = "An error occurred. Please try again.";
+            ErrorHandler::handleError("An error occurred. Please try again.");
             $this->redirect('/register');
         }
     }

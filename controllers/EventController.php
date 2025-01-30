@@ -4,6 +4,7 @@ require_once __DIR__ . '/../lib/Validator.php';
 require_once __DIR__ . '/../lib/Database.php';
 require_once __DIR__ . '/../lib/EventHelper.php';
 require_once __DIR__ . '/../middleware/RoleMiddleware.php';
+require_once __DIR__ . '/../lib/ErrorHandler.php';
 
 class EventController extends BaseController {
     private $db;
@@ -37,7 +38,7 @@ class EventController extends BaseController {
                 'isAdmin' => RoleMiddleware::isAdmin()
             ]);
         } catch (PDOException $e) {
-            $_SESSION['error'] = "Error fetching events";
+            ErrorHandler::handleError("Error fetching events.");
             $this->redirect('/events');
         }
     }
@@ -75,7 +76,7 @@ class EventController extends BaseController {
             $_SESSION['success'] = "Event created successfully";
             $this->redirect('/events');
         } catch (PDOException $e) {
-            $_SESSION['error'] = "Error creating event";
+            ErrorHandler::handleError("Error creating event.");
             $this->redirect('/events/create');
         }
     }
@@ -105,7 +106,7 @@ class EventController extends BaseController {
                 'isAdmin' => RoleMiddleware::isAdmin()
             ]);
         } catch (PDOException $e) {
-            $_SESSION['error'] = "Error fetching event";
+            ErrorHandler::handleError("Error fetching event.");
             $this->redirect('/events');
         }
     }
@@ -148,7 +149,7 @@ class EventController extends BaseController {
             $_SESSION['success'] = "Event updated successfully";
             $this->redirect('/events');
         } catch (PDOException $e) {
-            $_SESSION['error'] = "Error updating event";
+            ErrorHandler::handleError("Error updating event.");
             $this->redirect("/events/edit/$id");
         }
     }
@@ -166,7 +167,7 @@ class EventController extends BaseController {
 
             $_SESSION['success'] = "Event deleted successfully";
         } catch (PDOException $e) {
-            $_SESSION['error'] = "Error deleting event";
+            ErrorHandler::handleError("Error deleting event.");
         }
         $this->redirect('/events');
     }
@@ -210,20 +211,24 @@ class EventController extends BaseController {
                 'isAdmin' => RoleMiddleware::isAdmin()
             ]);
         } catch (PDOException $e) {
-            $_SESSION['error'] = "Error fetching event details";
+            ErrorHandler::handleError("Error fetching event details.");
             $this->redirect('/events');
         }
     }
 
     public function downloadAttendees($id) {
         try {
-            $stmt = $this->db->prepare("SELECT id FROM events WHERE id = ? AND user_id = ?");
+            $stmt = $this->db->prepare("SELECT name FROM events WHERE id = ? AND user_id = ?");
             $stmt->execute([$id, $_SESSION['user_id']]);
-            if (!$stmt->fetch()) {
-                $_SESSION['error'] = "Event not found";
+            $event = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$event) {
+                ErrorHandler::handleError("Event not found.");
                 $this->redirect('/events');
                 return;
             }
+
+            $eventName = preg_replace('/[^a-zA-Z0-9-_]/', '_', $event['name']); // Sanitize filename
+            $filename = "{$eventName}-attendees.csv";
 
             $stmt = $this->db->prepare("
             SELECT attendee_name, attendee_email, created_at 
@@ -235,7 +240,7 @@ class EventController extends BaseController {
             $attendees = $stmt->fetchAll();
 
             header('Content-Type: text/csv');
-            header('Content-Disposition: attachment; filename="attendees.csv"');
+            header("Content-Disposition: attachment; filename=\"$filename\"");
 
             $output = fopen('php://output', 'w');
 
@@ -255,7 +260,7 @@ class EventController extends BaseController {
             fclose($output);
             exit;
         } catch (PDOException $e) {
-            $_SESSION['error'] = "Error downloading attendees list";
+            ErrorHandler::handleError("Error downloading attendees list.");
             $this->redirect("/events/show/$id");
         }
     }
