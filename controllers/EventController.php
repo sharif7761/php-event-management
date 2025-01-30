@@ -214,4 +214,49 @@ class EventController extends BaseController {
             $this->redirect('/events');
         }
     }
+
+    public function downloadAttendees($id) {
+        try {
+            $stmt = $this->db->prepare("SELECT id FROM events WHERE id = ? AND user_id = ?");
+            $stmt->execute([$id, $_SESSION['user_id']]);
+            if (!$stmt->fetch()) {
+                $_SESSION['error'] = "Event not found";
+                $this->redirect('/events');
+                return;
+            }
+
+            $stmt = $this->db->prepare("
+            SELECT attendee_name, attendee_email, created_at 
+            FROM event_attendees 
+            WHERE event_id = ?
+            ORDER BY created_at DESC
+        ");
+            $stmt->execute([$id]);
+            $attendees = $stmt->fetchAll();
+
+            header('Content-Type: text/csv');
+            header('Content-Disposition: attachment; filename="attendees.csv"');
+
+            $output = fopen('php://output', 'w');
+
+            fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
+
+
+            fputcsv($output, ['Name', 'Email', 'Registration Date']);
+
+            foreach ($attendees as $attendee) {
+                fputcsv($output, [
+                    $attendee['attendee_name'],
+                    $attendee['attendee_email'],
+                    date('Y-m-d H:i:s', strtotime($attendee['created_at']))
+                ]);
+            }
+
+            fclose($output);
+            exit;
+        } catch (PDOException $e) {
+            $_SESSION['error'] = "Error downloading attendees list";
+            $this->redirect("/events/show/$id");
+        }
+    }
 }

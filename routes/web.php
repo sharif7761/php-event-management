@@ -13,10 +13,11 @@ $router->post('/register', [AuthController::class, 'register']);
 $router->get('/logout', [AuthController::class, 'logout']);
 
 // manage events routes
-$router->get('/events', [EventController::class, 'index'], [AuthMiddleware::class]);
-$router->get('/events/create', [EventController::class, 'create'], [AuthMiddleware::class]);
-$router->post('/events', [EventController::class, 'store'], [AuthMiddleware::class]);
-$router->get('/events/edit/:id', [EventController::class, 'edit'], [AuthMiddleware::class]);
-$router->post('/events/:id', [EventController::class, 'update'], [AuthMiddleware::class]);
-$router->post('/events/delete/:id', [EventController::class, 'delete'], [AuthMiddleware::class]);
-$router->get('/events/show/:id', [EventController::class, 'show'], [AuthMiddleware::class]);
+$router->get('/events', [EventController::class, 'index']);
+$router->get('/events/create', [EventController::class, 'create']);
+$router->post('/events', [EventController::class, 'store']);
+$router->get('/events/edit/:id', [EventController::class, 'edit']);
+$router->post('/events/:id', [EventController::class, 'update']);
+$router->post('/events/delete/:id', [EventController::class, 'delete']);
+$router->get('/events/show/:id', [EventController::class, 'show']);
+$router->get('/events/:id/download-attendees', [EventController::class, 'downloadAttendees']);
