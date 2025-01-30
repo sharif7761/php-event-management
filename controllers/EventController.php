@@ -21,7 +21,6 @@ class EventController extends BaseController {
             $search = $_GET['search'] ?? '';
             $searchParam = "%{$search}%";
 
-            // Get the appropriate query based on user role
             $query = $this->eventHelper->getEventQuery(
                 $searchParam,
                 RoleMiddleware::isAdmin() ? null : $_SESSION['user_id']
@@ -80,6 +79,98 @@ class EventController extends BaseController {
             $this->redirect('/events/create');
         }
     }
+
+    public function edit($id) {
+        try {
+            if (!RoleMiddleware::authorizeEvent($id, $this->db)) {
+                $_SESSION['error'] = "Access denied";
+                $this->redirect('/events');
+                return;
+            }
+
+            $event = $this->eventHelper->getEventDetails(
+                $id,
+                RoleMiddleware::isAdmin() ? null : $_SESSION['user_id']
+            );
+
+            if (!$event) {
+                $_SESSION['error'] = "Event not found";
+                $this->redirect('/events');
+                return;
+            }
+
+            $this->view('events/edit', [
+                'title' => 'Edit Event',
+                'event' => $event,
+                'isAdmin' => RoleMiddleware::isAdmin()
+            ]);
+        } catch (PDOException $e) {
+            $_SESSION['error'] = "Error fetching event";
+            $this->redirect('/events');
+        }
+    }
+
+    public function update($id) {
+        try {
+            if (!RoleMiddleware::authorizeEvent($id, $this->db)) {
+                $_SESSION['error'] = "Access denied";
+                $this->redirect('/events');
+                return;
+            }
+
+            $rules = [
+                'name' => ['required' => true, 'min' => 3],
+                'description' => ['required' => true, 'min' => 10],
+                'max_capacity' => ['required' => true],
+                'event_datetime' => ['required' => true]
+            ];
+
+            if (!$this->validator->validate($_POST, $rules)) {
+                $_SESSION['errors'] = $this->validator->getErrors();
+                $_SESSION['old'] = $_POST;
+                $this->redirect("/events/edit/$id");
+                return;
+            }
+
+            $stmt = $this->db->prepare("
+                UPDATE events 
+                SET name = ?, description = ?, max_capacity = ?, event_datetime = ? 
+                WHERE id = ?
+            ");
+            $stmt->execute([
+                $_POST['name'],
+                $_POST['description'],
+                $_POST['max_capacity'],
+                $_POST['event_datetime'],
+                $id
+            ]);
+
+            $_SESSION['success'] = "Event updated successfully";
+            $this->redirect('/events');
+        } catch (PDOException $e) {
+            $_SESSION['error'] = "Error updating event";
+            $this->redirect("/events/edit/$id");
+        }
+    }
+
+    public function delete($id) {
+        try {
+            if (!RoleMiddleware::authorizeEvent($id, $this->db)) {
+                $_SESSION['error'] = "Access denied";
+                $this->redirect('/events');
+                return;
+            }
+
+            $stmt = $this->db->prepare("DELETE FROM events WHERE id = ?");
+            $stmt->execute([$id]);
+
+            $_SESSION['success'] = "Event deleted successfully";
+        } catch (PDOException $e) {
+            $_SESSION['error'] = "Error deleting event";
+        }
+        $this->redirect('/events');
+    }
+
     public function show($id) {
         try {
             if (!RoleMiddleware::authorizeEvent($id, $this->db)) {
