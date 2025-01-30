@@ -3,6 +3,7 @@ require_once __DIR__ . '/../controllers/AuthController.php';
 require_once __DIR__ . '/../controllers/EventController.php';
 require_once __DIR__ . '/../middleware/AuthMiddleware.php';
 require_once __DIR__ . '/../middleware/GuestMiddleware.php';
+require_once __DIR__ . '/../controllers/HomeController.php';
 
 $router = Router::getInstance();
 
@@ -14,6 +15,8 @@ $router->post('/register', [AuthController::class, 'register'], [GuestMiddleware
 
 //homepage
 $router->get('/', [HomeController::class, 'index']);
+$router->get('/events-register/:id', [HomeController::class, 'showForm']);
+$router->post('/events-register', [HomeController::class, 'register']);
 
 // Authenticated routes
 $router->get('/logout', [AuthController::class, 'logout'], [AuthMiddleware::class]);

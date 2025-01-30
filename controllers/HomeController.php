@@ -73,6 +73,106 @@ class HomeController extends BaseController {
 
         } catch (PDOException $e) {
           ErrorHandler::handleError("An error occurred while fetching events. Please try again later.");
-      }
+        }
+    }
+
+    public function showForm($eventId) {
+        try {
+            $stmt = $this->db->prepare("
+                SELECT e.*, 
+                       (SELECT COUNT(*) FROM event_attendees WHERE event_id = e.id) as attendees_count
+                FROM events e
+                WHERE e.id = ? AND e.event_datetime > NOW()
+            ");
+            $stmt->execute([$eventId]);
+            $event = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$event) {
+                ErrorHandler::handleError("Event not found or has already passed");
+                $this->redirect('/events');
+                return;
+            }
+
+            $this->view('home/event-register', [
+                'title' => 'Register for Event',
+                'event' => $event
+            ]);
+
+        } catch (PDOException $e) {
+            ErrorHandler::handleError("An error occurred. Please try again.");
+            $this->redirect('/events');
+        }
+    }
+
+    public function register() {
+        // Only accept Ajax requests
+        if (!isset($_SERVER['HTTP_X_REQUESTED_WITH']) || strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) != 'xmlhttprequest') {
+            http_response_code(403);
+            echo json_encode(['error' => 'Invalid request method']);
+            return;
+        }
+
+        $rules = [
+            'event_id' => ['required' => true],
+            'attendee_name' => ['required' => true, 'min' => 2],
+            'attendee_email' => ['required' => true, 'email' => true]
+        ];
+
+        if (!$this->validator->validate($_POST, $rules)) {
+            http_response_code(422);
+            echo json_encode(['error' => $this->validator->getErrors()]);
+            return;
+        }
+
+        try {
+            $this->db->beginTransaction();
+
+            $stmt = $this->db->prepare("
+                SELECT e.max_capacity, 
+                       (SELECT COUNT(*) FROM event_attendees WHERE event_id = ?) as current_attendees 
+                FROM events e 
+                WHERE e.id = ?
+            ");
+            $stmt->execute([$_POST['event_id'], $_POST['event_id']]);
+            $eventData = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$eventData) {
+                throw new Exception('Event not found');
+            }
+
+            // Check capacity
+            if ($eventData['current_attendees'] >= $eventData['max_capacity']) {
+                throw new Exception('Event has reached maximum capacity');
+            }
+
+            // Check if email already registered
+            $stmt = $this->db->prepare("
+                SELECT id FROM event_attendees 
+                WHERE event_id = ? AND attendee_email = ?
+            ");
+            $stmt->execute([$_POST['event_id'], $_POST['attendee_email']]);
+            if ($stmt->fetch()) {
+                throw new Exception('You have already registered for this event');
+            }
+
+            // Register attendee
+            $stmt = $this->db->prepare("
+                INSERT INTO event_attendees (event_id, attendee_name, attendee_email) 
+                VALUES (?, ?, ?)
+            ");
+            $stmt->execute([
+                $_POST['event_id'],
+                $_POST['attendee_name'],
+                $_POST['attendee_email']
+            ]);
+
+            $this->db->commit();
+            echo json_encode(['success' => 'Registration successful']);
+
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            http_response_code(422);
+            echo json_encode(['error' => $e->getMessage()]);
+        }
     }
 }
