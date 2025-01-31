@@ -14,11 +14,16 @@ class AuthController extends BaseController {
     }
 
     public function showLoginForm() {
-        $this->view('auth/login');
+        $this->view('auth/login', [
+            'title' => 'Login'
+        ]);
     }
 
     public function showRegistrationForm() {
-        $this->view('auth/register');
+        $this->view('auth/register', [
+            'title' => 'Registration'
+        ]);
+
     }
 
     public function login() {
@@ -39,8 +44,7 @@ class AuthController extends BaseController {
             $user = $stmt->fetch();
 
             if (!$user || !password_verify($_POST['password'], $user['password'])) {
-                $_SESSION['error'] = "Invalid credentials";
-                $this->redirect('/login');
+                ErrorHandler::handleError("Invalid credentials.", '/login');
                 return;
             }
 
@@ -50,7 +54,6 @@ class AuthController extends BaseController {
             $this->redirect('/events');
         } catch (PDOException $e) {
             ErrorHandler::handleError("An error occurred. Please try again.");
-            $this->redirect('/login');
         }
     }
 
@@ -73,8 +76,7 @@ class AuthController extends BaseController {
             $stmt = $this->db->prepare("SELECT id FROM users WHERE email = ?");
             $stmt->execute([$_POST['email']]);
             if ($stmt->fetch()) {
-                $_SESSION['error'] = "Email already exists";
-                $this->redirect('/register');
+                ErrorHandler::handleError("Email already exists.", '/register');
                 return;
             }
 

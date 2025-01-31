@@ -88,8 +88,7 @@ class HomeController extends BaseController {
             $event = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if (!$event) {
-                ErrorHandler::handleError("Event not found or has already passed");
-                $this->redirect('/events');
+                ErrorHandler::handleError("Event not found or has already passed", '/events');
                 return;
             }
 
@@ -99,8 +98,7 @@ class HomeController extends BaseController {
             ]);
 
         } catch (PDOException $e) {
-            ErrorHandler::handleError("An error occurred. Please try again.");
-            $this->redirect('/events');
+            ErrorHandler::handleError("An error occurred. Please try again.", '/events');
         }
     }
 

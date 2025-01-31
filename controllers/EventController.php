@@ -39,7 +39,6 @@ class EventController extends BaseController {
             ]);
         } catch (PDOException $e) {
             ErrorHandler::handleError("Error fetching events.");
-            $this->redirect('/events');
         }
     }
 
@@ -77,15 +76,13 @@ class EventController extends BaseController {
             $this->redirect('/events');
         } catch (PDOException $e) {
             ErrorHandler::handleError("Error creating event.");
-            $this->redirect('/events/create');
         }
     }
 
     public function edit($id) {
         try {
             if (!RoleMiddleware::authorizeEvent($id, $this->db)) {
-                $_SESSION['error'] = "Access denied";
-                $this->redirect('/events');
+                ErrorHandler::handleError("Access denied", '/events');
                 return;
             }
 
@@ -95,8 +92,7 @@ class EventController extends BaseController {
             );
 
             if (!$event) {
-                $_SESSION['error'] = "Event not found";
-                $this->redirect('/events');
+                ErrorHandler::handleError("Access denied", '/events');
                 return;
             }
 
@@ -107,15 +103,13 @@ class EventController extends BaseController {
             ]);
         } catch (PDOException $e) {
             ErrorHandler::handleError("Error fetching event.");
-            $this->redirect('/events');
         }
     }
 
     public function update($id) {
         try {
             if (!RoleMiddleware::authorizeEvent($id, $this->db)) {
-                $_SESSION['error'] = "Access denied";
-                $this->redirect('/events');
+                ErrorHandler::handleError("Access denied", '/events');
                 return;
             }
 
@@ -150,15 +144,13 @@ class EventController extends BaseController {
             $this->redirect('/events');
         } catch (PDOException $e) {
             ErrorHandler::handleError("Error updating event.");
-            $this->redirect("/events/edit/$id");
         }
     }
 
     public function delete($id) {
         try {
             if (!RoleMiddleware::authorizeEvent($id, $this->db)) {
-                $_SESSION['error'] = "Access denied";
-                $this->redirect('/events');
+                ErrorHandler::handleError("Access denied.", '/events');
                 return;
             }
 
@@ -175,8 +167,7 @@ class EventController extends BaseController {
     public function show($id) {
         try {
             if (!RoleMiddleware::authorizeEvent($id, $this->db)) {
-                $_SESSION['error'] = "Access denied";
-                $this->redirect('/events');
+                ErrorHandler::handleError("Access denied.", '/events');
                 return;
             }
 
@@ -186,8 +177,7 @@ class EventController extends BaseController {
             );
 
             if (!$event) {
-                $_SESSION['error'] = "Event not found";
-                $this->redirect('/events');
+                ErrorHandler::handleError("Event not found.", '/events');
                 return;
             }
 
@@ -212,7 +202,6 @@ class EventController extends BaseController {
             ]);
         } catch (PDOException $e) {
             ErrorHandler::handleError("Error fetching event details.");
-            $this->redirect('/events');
         }
     }
 
@@ -260,8 +249,7 @@ class EventController extends BaseController {
             fclose($output);
             exit;
         } catch (PDOException $e) {
-            ErrorHandler::handleError("Error downloading attendees list.");
-            $this->redirect("/events/show/$id");
+            ErrorHandler::handleError("Error downloading attendees list.", "/events/show/$id");
         }
     }
 }
