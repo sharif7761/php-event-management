@@ -6,6 +6,9 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Join Events</a>
+                </li>
                 <?php if (isset($_SESSION['user_id'])): ?>
                     <li class="nav-item">
                         <span class="nav-link">Welcome, <?= htmlspecialchars($_SESSION['user_name']) ?></span>
@@ -17,9 +20,6 @@
                         <a class="nav-link" href="/logout">Logout</a>
                     </li>
                 <?php else: ?>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/">Join Events</a>
-                    </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/login">Login</a>
                     </li>
