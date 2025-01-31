@@ -41,6 +41,7 @@ A web-based event management system built with PHP and MySQL that allows users t
 - Apache/Nginx Server
 
 ## ⚙️ Installation
+** First start your xampp or apache server and mysql.
 
 1. **Clone Repository**
 ```bash
@@ -49,7 +50,7 @@ cd php-event-management
 ```
 
 2. **Configuration env**
-- Copy `.env.example` to `.env`
+- Copy `.env.example` to `.env`  (although not recommended, the .env file has already been created and pushed to Git for your convenience)
 - Update database credentials:
 ```php
 DB_HOST=localhost
@@ -75,8 +76,7 @@ php database/migrate.php seed
 
 Option 2: Using SQL File
 ```bash
-# Import the schema.sql file to your MySQL server
-mysql -u username -p database_name < /schema.sql
+ Run the sql commands from the schema.sql file into your MySQL database
 ```
 
 Option 3: Download SQL File
