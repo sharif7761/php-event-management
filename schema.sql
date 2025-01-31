@@ -36,10 +36,10 @@ CREATE TABLE IF NOT EXISTS event_attendees (
     FOREIGN KEY (event_id) REFERENCES events(id)
     );
 
--- Step 6: Insert admin user
+-- Step 6: Insert admin user. password: admin123
 INSERT INTO users (name, email, password, role) VALUES
     ('Admin User', 'admin@example.com', '$2y$10$abcdefghijABCDEFGHIJabcdefghijABCDEFGHIJabcdefghijABCDEFGHIJ', 'admin');
 
--- Step 7: Insert regular user
+-- Step 7: Insert regular user. password: user123
 INSERT INTO users (name, email, password, role) VALUES
     ('Regular User', 'user@example.com', '$2y$10$klmnopqrstKLMNOPQRSTklmnopqrstKLMNOPQRSTklmnopqrstKLMNOPQRST', 'user');

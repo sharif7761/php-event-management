@@ -76,7 +76,7 @@ php database/migrate.php seed
 Option 2: Using SQL File
 ```bash
 # Import the schema.sql file to your MySQL server
-mysql -u username -p database_name < database/schema.sql
+mysql -u username -p database_name < /schema.sql
 ```
 
 Option 3: Download SQL File
